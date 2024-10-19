@@ -6,6 +6,13 @@ public class Producto
     private string descripcion;
     private float precio;
 
+    public Producto() 
+    {
+        idProducto = -1;
+        descripcion = string.Empty;
+        precio = 0f;
+    }
+
     public Producto(int idProducto, string descripcion, float precio)
     {
         this.idProducto = idProducto;
