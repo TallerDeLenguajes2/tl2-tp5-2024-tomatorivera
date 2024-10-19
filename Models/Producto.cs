@@ -4,16 +4,22 @@ public class Producto
 {
     private int idProducto;
     private string descripcion;
-    private float precio;
+    private int precio;
 
     public Producto() 
     {
         idProducto = -1;
         descripcion = string.Empty;
-        precio = 0f;
+        precio = 0;
     }
 
-    public Producto(int idProducto, string descripcion, float precio)
+    public Producto(string descripcion, int precio) {
+        idProducto = 0;
+        this.descripcion = descripcion;
+        this.precio = precio;
+    }
+
+    public Producto(int idProducto, string descripcion, int precio)
     {
         this.idProducto = idProducto;
         this.descripcion = descripcion;
@@ -22,5 +28,5 @@ public class Producto
 
     public int IdProducto { get => idProducto; set => idProducto = value; }
     public string Descripcion { get => descripcion; set => descripcion = value; }
-    public float Precio { get => precio; set => precio = value; }
+    public int Precio { get => precio; set => precio = value; }
 }

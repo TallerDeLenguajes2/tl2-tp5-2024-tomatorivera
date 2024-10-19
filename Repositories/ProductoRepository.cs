@@ -46,11 +46,12 @@ public class ProductoRepository : IRepository<Producto>
         {
             connection.Open();
 
-            var sqlQuery = @"SELECT * FROM Produtos";
+            var sqlQuery = @"SELECT * FROM Productos";
             var sqlCmd = new SqliteCommand(sqlQuery, connection);
             using (var sqlReader = sqlCmd.ExecuteReader())
             {
-                productos.Add(generarProducto(sqlReader));
+                while (sqlReader.Read())
+                    productos.Add(generarProducto(sqlReader));
             }
 
             connection.Close();
@@ -69,6 +70,7 @@ public class ProductoRepository : IRepository<Producto>
             var sqlCmd = new SqliteCommand(sqlQuery, connection);
             sqlCmd.Parameters.AddWithValue("$descripcion", obj.Descripcion);
             sqlCmd.Parameters.AddWithValue("$precio", obj.Precio);
+            sqlCmd.Parameters.AddWithValue("$id", id);
             sqlCmd.ExecuteNonQuery();
 
             connection.Close();
@@ -110,8 +112,9 @@ public class ProductoRepository : IRepository<Producto>
         try {
             return new Producto(Convert.ToInt32(reader[0]),
                                 Convert.ToString(reader[1]) ?? string.Empty,
-                                (float) reader[2]);
-        } catch (Exception) {
+                                Convert.ToInt32(reader[2]));
+        } catch (Exception ex) {
+            System.Console.WriteLine($"Error en la generación de producto: {ex.Message}");
             return new Producto();
         }
     }
