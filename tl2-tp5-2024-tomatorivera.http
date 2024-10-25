@@ -1,0 +1,6 @@
+@tl2_tp5_2024_tomatorivera_HostAddress = http://localhost:5009
+
+GET {{tl2_tp5_2024_tomatorivera_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
