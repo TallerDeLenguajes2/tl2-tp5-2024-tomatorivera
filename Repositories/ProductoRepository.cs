@@ -14,26 +14,13 @@ public class ProductoRepository : IRepository<Producto>
             connection.Open();
 
             var sqlQuery = @"INSERT INTO Productos (Descripcion, Precio) VALUES ($descripcion, $precio)";
-            var sqlCmd = new SqliteCommand(sqlQuery, connection);
-            sqlCmd.Parameters.AddWithValue("$descripcion", obj.Descripcion);
-            sqlCmd.Parameters.AddWithValue("$precio", obj.Precio);
-            sqlCmd.ExecuteNonQuery();
-
-            connection.Close();
-        }
-    }
-
-    public void Eliminar(int id)
-    {
-        using (var connection = new SqliteConnection(connectionString))
-        {
-            connection.Open();
-
-            var sqlQuery = @"DELETE FROM Productos WHERE idProducto=$id";
-            var sqlCmd = new SqliteCommand(sqlQuery, connection);
-            sqlCmd.Parameters.AddWithValue("$id", id);
-            sqlCmd.ExecuteNonQuery();
-
+            using(var sqlCmd = new SqliteCommand(sqlQuery, connection))
+            {
+                sqlCmd.Parameters.AddWithValue("$descripcion", obj.Descripcion);
+                sqlCmd.Parameters.AddWithValue("$precio", obj.Precio);
+                sqlCmd.ExecuteNonQuery();
+            }
+            
             connection.Close();
         }
     }
@@ -46,8 +33,8 @@ public class ProductoRepository : IRepository<Producto>
         {
             connection.Open();
 
-            var sqlQuery = @"SELECT * FROM Productos";
-            var sqlCmd = new SqliteCommand(sqlQuery, connection);
+            var sqlQuery = @"SELECT idProducto, Descripcion, Precio FROM Productos";
+            using (var sqlCmd = new SqliteCommand(sqlQuery, connection))
             using (var sqlReader = sqlCmd.ExecuteReader())
             {
                 while (sqlReader.Read())
@@ -66,12 +53,33 @@ public class ProductoRepository : IRepository<Producto>
         {
             connection.Open();
 
-            var sqlQuery = @"UPDATE Productos SET Descripcion=$descripcion, Precio=$precio WHERE idProducto=$id";
-            var sqlCmd = new SqliteCommand(sqlQuery, connection);
-            sqlCmd.Parameters.AddWithValue("$descripcion", obj.Descripcion);
-            sqlCmd.Parameters.AddWithValue("$precio", obj.Precio);
-            sqlCmd.Parameters.AddWithValue("$id", id);
-            sqlCmd.ExecuteNonQuery();
+            var sqlQuery = @"UPDATE Productos 
+                             SET Descripcion=$descripcion, Precio=$precio 
+                             WHERE idProducto=$id";
+            using (var sqlCmd = new SqliteCommand(sqlQuery, connection))
+            {
+                sqlCmd.Parameters.AddWithValue("$descripcion", obj.Descripcion);
+                sqlCmd.Parameters.AddWithValue("$precio", obj.Precio);
+                sqlCmd.Parameters.AddWithValue("$id", id);
+                sqlCmd.ExecuteNonQuery();
+            }
+
+            connection.Close();
+        }
+    }
+
+    public void Eliminar(int id)
+    {
+        using (var connection = new SqliteConnection(connectionString))
+        {
+            connection.Open();
+
+            var sqlQuery = @"DELETE FROM Productos WHERE idProducto=$id";
+            using (var sqlCmd = new SqliteCommand(sqlQuery, connection))
+            {
+                sqlCmd.Parameters.AddWithValue("$id", id);
+                sqlCmd.ExecuteNonQuery();
+            }
 
             connection.Close();
         }
@@ -85,13 +93,14 @@ public class ProductoRepository : IRepository<Producto>
         {
             connection.Open();
 
-            var sqlQuery = @"SELECT * FROM Productos WHERE idProducto=$id";
-            var sqlCmd = new SqliteCommand(sqlQuery, connection);
-            sqlCmd.Parameters.AddWithValue("$id", id);
-            using (var sqlReader = sqlCmd.ExecuteReader())
+            var sqlQuery = @"SELECT idProducto, Descripcion, Precio FROM Productos WHERE idProducto=$id";
+            using (var sqlCmd = new SqliteCommand(sqlQuery, connection))
             {
-                producto = sqlReader.Read() ? generarProducto(sqlReader)
-                                            : new Producto();
+                sqlCmd.Parameters.AddWithValue("$id", id);
+                using (var sqlReader = sqlCmd.ExecuteReader())
+                {
+                    producto = sqlReader.Read() ? generarProducto(sqlReader) : new Producto();
+                }
             }
 
             connection.Close();
@@ -110,9 +119,9 @@ public class ProductoRepository : IRepository<Producto>
     private Producto generarProducto(SqliteDataReader reader)
     {
         try {
-            return new Producto(Convert.ToInt32(reader[0]),
-                                Convert.ToString(reader[1]) ?? string.Empty,
-                                Convert.ToInt32(reader[2]));
+            return new Producto(reader.GetInt32(0),
+                                reader.GetString(1),
+                                reader.GetInt32(2));
         } catch (Exception ex) {
             System.Console.WriteLine($"Error en la generación de producto: {ex.Message}");
             return new Producto();

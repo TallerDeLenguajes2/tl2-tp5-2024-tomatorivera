@@ -8,7 +8,7 @@ namespace Controllers;
 [Route("[controller]")]
 public class ProductoController : ControllerBase
 {
-    private readonly ProductoRepository repo;
+    private readonly IRepository<Producto> repo;
 
     public ProductoController() {
         repo = new ProductoRepository();
@@ -40,6 +40,9 @@ public class ProductoController : ControllerBase
     {
         try {
             var producto = repo.Obtener(id);
+            if (producto.IdProducto == -1)
+                throw new Exception($"No se ha encontrado un producto de ID {id}");
+                
             producto.Descripcion = descripcion;
             repo.Modificar(id, producto);
             return Ok($"Producto modificado: {descripcion}");
